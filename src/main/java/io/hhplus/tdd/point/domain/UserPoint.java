@@ -10,3 +10,4 @@ public record UserPoint(
         return new UserPoint(id, 0, System.currentTimeMillis());
     }
 }
+
