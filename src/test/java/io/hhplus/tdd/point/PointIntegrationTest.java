@@ -39,6 +39,7 @@ class PointIntegrationTest {
         assertEquals(0L, fromDb.point());
     }
 
+
     @Test
     void 포인트_충전_및_사용_통합_검증() {
         long userId = 100L;
