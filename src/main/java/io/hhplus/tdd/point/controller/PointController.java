@@ -1,12 +1,12 @@
-package io.hhplus.tdd.point;
+package io.hhplus.tdd.point.controller;
 
-import io.hhplus.tdd.database.PointHistoryTable;
-import io.hhplus.tdd.database.UserPointTable;
+import io.hhplus.tdd.point.domain.PointHistory;
+import io.hhplus.tdd.point.domain.UserPoint;
+import io.hhplus.tdd.point.service.PointService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -15,6 +15,12 @@ public class PointController {
 
     private static final Logger log = LoggerFactory.getLogger(PointController.class);
 
+    private final PointService pointService;
+
+    public PointController(PointService pointService) {
+        this.pointService = pointService;
+    }
+
     /**
      * TODO - 특정 유저의 포인트를 조회하는 기능을 작성해주세요.
      */
@@ -22,14 +28,7 @@ public class PointController {
     public UserPoint point(
             @PathVariable long id
     ) {
-        // 유저 정보 조회
-        UserPointTable userPointTable = new UserPointTable();
-        UserPoint Result = userPointTable.selectById(id);
-
-        if (Result == null) {
-            throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
-        }
-        return Result;
+        return pointService.getUserPoint(id);
     }
 
 
@@ -40,20 +39,7 @@ public class PointController {
     public List<PointHistory> history(
             @PathVariable long id
     ) {
-        // 유저 정보 조회
-        UserPointTable userPointTable = new UserPointTable();
-        UserPoint user = userPointTable.selectById(id);
-
-        if (user == null) {
-            throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
-        }
-
-        // 유저 히스토리 조회
-        List<PointHistory> ResultList = new ArrayList<>();
-        PointHistoryTable pointHistoryTable = new PointHistoryTable();
-        ResultList = pointHistoryTable.selectAllByUserId(id);
-
-        return ResultList;
+        return pointService.getHistory(id);
     }
 
     /**
@@ -64,26 +50,7 @@ public class PointController {
             @PathVariable long id,
             @RequestBody long amount
     ) {
-        // 유저 정보 조회
-        UserPointTable userPointTable = new UserPointTable();
-        UserPoint user = userPointTable.selectById(id);
-
-        if (user == null) {
-            throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
-        }
-
-        // 포인트 충전
-        userPointTable.insertOrUpdate(id, user.point() + amount);
-
-        // 히스토리 추가
-        PointHistoryTable pointHistoryTable = new PointHistoryTable();
-        long currentTime = System.currentTimeMillis();
-        pointHistoryTable.insert(id, amount, TransactionType.CHARGE, currentTime);
-
-        // 결과 조회
-        UserPoint Result = userPointTable.selectById(id);
-
-        return Result;
+        return pointService.charge(id, amount);
     }
 
     /**
@@ -92,33 +59,10 @@ public class PointController {
     @PatchMapping("{id}/use")
     public UserPoint use(
             @PathVariable long id,
-            @RequestBody long amount
+            @RequestBody long amount,
+            @RequestBody long purchaseAmount
     ) {
-        // 유저 정보 조회
-        UserPointTable userPointTable = new UserPointTable();
-        UserPoint user = userPointTable.selectById(id);
-
-        if (user == null) {
-            throw new IllegalArgumentException("해당 유저가 존재하지 않습니다.");
-        }
-
-        // 잔여포인트가 적다면 error
-        if(user.point() < amount){
-            throw new IllegalArgumentException("사용가능한 포인트가 충분하지 않습니다.");
-        }
-
-        // 포인트 사용
-        userPointTable.insertOrUpdate(id, user.point() - amount);
-
-        // 히스토리 추가
-        PointHistoryTable pointHistoryTable = new PointHistoryTable();
-        long currentTime = System.currentTimeMillis();
-        pointHistoryTable.insert(id, amount, TransactionType.USE, currentTime);
-
-        // 결과 조회
-        UserPoint Result = userPointTable.selectById(id);
-
-        return Result;
+   return pointService.use(id, amount, purchaseAmount);
     }
 
     @GetMapping("/")
