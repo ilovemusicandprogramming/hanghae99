@@ -53,6 +53,7 @@ public class PointController {
         return pointService.charge(id, amount);
     }
 
+
     /**
      * TODO - 특정 유저의 포인트를 사용하는 기능을 작성해주세요.
      */

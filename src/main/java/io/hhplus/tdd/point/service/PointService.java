@@ -111,6 +111,7 @@ public class PointService {
         return userPointTable.selectById(userId);
     }
 
+
     public UserPoint createUserIfNotExists(long baseId) {
         long candidateId = baseId;
 
